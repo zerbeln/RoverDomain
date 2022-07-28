@@ -8,7 +8,7 @@ from global_functions import create_csv_file, save_best_policies
 import time
 
 
-def sample_best_team(rd, pops):
+def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
     :param rd: Instance of the rover domain
@@ -16,20 +16,20 @@ def sample_best_team(rd, pops):
     :return: global reward for team of best individuals
     """
     # Reset rovers to initial conditions
-    for rk in rd.rovers:
-        rd.rovers[rk].reset_rover()
+    for rv in rd.rovers:
+        rd.rovers[rv].reset_rover()
 
     # Rover runs initial scan of environment and selects network weights
-    for rov in rd.rovers:
-        policy_id = np.argmax(pops["EA{0}".format(rd.rovers[rov].self_id)].fitness)
-        weights = pops["EA{0}".format(rd.rovers[rov].self_id)].population["pol{0}".format(policy_id)]
-        pops["NN{0}".format(rd.rovers[rov].rover_id)].get_weights(weights)
+    for rv in rd.rovers:
+        policy_id = np.argmax(pops["EA{0}".format(rd.rovers[rv].rover_id)].fitness)
+        weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
+        networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
     poi_rewards = np.zeros((p["n_poi"], p["steps"]))
     for tstep in range(p["steps"]):
         rover_actions = []
-        for rov in rd.rovers:
-            action = pops["NN{0}".format(rd.rovers[rov].rover_id)].run_rover_nn(rd.rovers[rov].sensor_data)
+        for rv in rd.rovers:
+            action = networks["NN{0}".format(rd.rovers[rv].rover_id)].run_rover_nn(rd.rovers[rv].observations)
             rover_actions.append(action)
 
         step_rewards = rd.step(rover_actions)
@@ -53,9 +53,10 @@ def rover_global():
 
     # Create dictionary for CCEA populations and rover neural networks
     pops = {}
+    networks = {}
     for rover_id in range(p["n_rovers"]):
         pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
-        pops["NN{0}".format(rover_id)] = NeuralNetwork()
+        networks["NN{0}".format(rover_id)] = NeuralNetwork()
 
     # Perform runs
     run_times = []
@@ -75,18 +76,19 @@ def rover_global():
             # Test each team from CCEA
             for team_number in range(p["pop_size"]):
                 # Reset rovers to initial conditions and select network weights
-                for rov in rd.rovers:
-                    rd.rovers[rov].reset_rover()
-                    policy_id = int(pops["EA{0}".format(rd.rovers[rov].rover_id)].team_selection[team_number])
-                    weights = pops["EA{0}".format(rd.rovers[rov].rover_id)].population["pol{0}".format(policy_id)]
-                    pops["NN{0}".format(rd.rovers[rov].rover_id)].get_weights(weights)
+                for rv in rd.rovers:
+                    rd.rovers[rv].reset_rover()
+                    policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
+                    weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
+                    networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
                 poi_rewards = np.zeros((p["n_poi"], p["steps"]))
                 for tstep in range(p["steps"]):
                     # Get rover actions from neural network
                     rover_actions = []
-                    for rov in rd.rovers:
-                        action = pops["NN{0}".format(rd.rovers[rov].rover_id)].run_rover_nn(rd.rovers[rov].sensor_data)
+                    for rv in rd.rovers:
+                        rover_id = rd.rovers[rv].rover_id
+                        action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
                         rover_actions.append(action)
 
                     # Rovers take action and make observations, environment returns global reward for current time step
@@ -104,7 +106,7 @@ def rover_global():
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
-                reward_history.append(sample_best_team(rd, pops))
+                reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
 
             # Choose new parents and create new offspring population

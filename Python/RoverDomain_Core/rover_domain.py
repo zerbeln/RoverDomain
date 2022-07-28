@@ -122,7 +122,7 @@ class RoverDomain:
             self.rovers[rov].loc[0] = x
             self.rovers[rov].loc[1] = y
 
-        # Rovers perceive the new world state
+        # Rovers observe the new world state
         for rov in self.rovers:
             self.rovers[rov].scan_environment(self.rovers, self.pois)
         for poi in self.pois:

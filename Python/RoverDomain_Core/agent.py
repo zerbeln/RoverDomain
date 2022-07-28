@@ -2,8 +2,6 @@ import numpy as np
 import sys
 from parameters import parameters as p
 from global_functions import get_linear_dist, get_squared_dist, get_angle
-# import warnings
-# warnings.filterwarnings('ignore')
 
 
 class Poi:
@@ -21,7 +19,7 @@ class Poi:
     def update_observer_distances(self, rovers):
         for rov in rovers:
             dist = get_linear_dist(rovers[rov].loc[0], rovers[rov].loc[1], self.loc[0], self.loc[1])
-            self.observer_distances[rovers[rov].self_id] = dist
+            self.observer_distances[rovers[rov].rover_id] = dist
 
 
 class Rover:
@@ -39,7 +37,7 @@ class Rover:
         self.n_inputs = p["n_inp"]  # Number of inputs for rover's neural network
 
         # Rover Data -----------------------------------------------------------------------------------------
-        self.sensor_readings = np.zeros(p["n_inp"], dtype=np.float128)  # Number of sensor inputs for Neural Network
+        self.observations = np.zeros(p["n_inp"], dtype=np.float128)  # Number of sensor inputs for Neural Network
         self.rover_actions = np.zeros(p["n_out"], dtype=np.float128)  # Motor actions from neural network outputs
 
     def reset_rover(self):
@@ -47,7 +45,7 @@ class Rover:
         Resets the rover to its initial position in the world
         """
         self.loc = self.initial_pos.copy()
-        self.sensor_readings = np.zeros(self.n_inputs, dtype=np.float128)
+        self.observations = np.zeros(self.n_inputs, dtype=np.float128)
 
     def scan_environment(self, rovers, pois):
         """
@@ -58,8 +56,8 @@ class Rover:
         rover_state = self.rover_scan(rovers, n_brackets)
 
         for i in range(n_brackets):
-            self.sensor_readings[i] = poi_state[i]
-            self.sensor_readings[n_brackets + i] = rover_state[i]
+            self.observations[i] = poi_state[i]
+            self.observations[n_brackets + i] = rover_state[i]
 
     def poi_scan(self, pois, n_brackets):
         """
@@ -103,10 +101,10 @@ class Rover:
         temp_rover_dist_list = [[] for _ in range(n_brackets)]
 
         # Log rover distances into brackets
-        for rk in rovers:
-            if self.self_id != rovers[rk].self_id:  # Ignore self
-                rov_x = rovers[rk].loc[0]
-                rov_y = rovers[rk].loc[1]
+        for rv in rovers:
+            if self.rover_id != rovers[rv].rover_id:  # Ignore self
+                rov_x = rovers[rv].loc[0]
+                rov_y = rovers[rv].loc[1]
 
                 angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
                 dist = get_squared_dist(rov_x, rov_y, self.loc[0], self.loc[1])
