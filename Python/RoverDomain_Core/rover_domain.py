@@ -70,9 +70,8 @@ class RoverDomain:
             poi_y = float(config_input[poi_id][1])
             poi_val = float(config_input[poi_id][2])
             poi_coupling = float(config_input[poi_id][3])
-            poi_quadrant = float(config_input[poi_id][4])
 
-            self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_quadrant, poi_id)
+            self.pois["P{0}".format(poi_id)] = Poi(poi_x, poi_y, poi_val, poi_coupling, poi_id)
 
     def load_rover_configuration(self):
         """
@@ -92,3 +91,43 @@ class RoverDomain:
 
             self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
 
+    def step(self, rover_actions):
+        """
+        Rovers take action provided from neural network, and then perceive the state of the world.
+        """
+
+        # Rovers take action from neural network
+        for rov in self.rovers:
+            dx = 2 * p["dmax"] * (rover_actions[self.rovers[rov].rover_id][0] - 0.5)
+            dy = 2 * p["dmax"] * (rover_actions[self.rovers[rov].rover_id][1] - 0.5)
+
+            # Update X Position
+            x = dx + self.rovers[rov].loc[0]
+
+            # Rovers cannot move beyond boundaries of the world
+            if x < 0:
+                x = 0
+            elif x > self.world_x - 1:
+                x = self.world_x - 1
+
+            # Update Y Position
+            y = dy + self.rovers[rov].loc[1]
+
+            # Rovers cannot move beyond boundaries of the world
+            if y < 0:
+                y = 0
+            elif y > self.world_y - 1:
+                y = self.world_y - 1
+
+            self.rovers[rov].loc[0] = x
+            self.rovers[rov].loc[1] = y
+
+        # Rovers perceive the new world state
+        for rov in self.rovers:
+            self.rovers[rov].scan_environment(self.rovers, self.pois)
+        for poi in self.pois:
+            self.pois[poi].update_observer_distances(self.rovers)
+
+        global_reward = self.calc_global()
+
+        return global_reward
