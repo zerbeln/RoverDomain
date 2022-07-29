@@ -11,10 +11,11 @@ class Poi:
         self.value = p_val  # POI Value
         self.coupling = pc  # POI coupling requirement
         self.observer_distances = np.zeros(p["n_rovers"])  # Keeps track of rover distances
-        self.observed = False  # Boolean that indicates whether or not a POI is successfully observed
+        self.observed = False  # Boolean that indicates if a POI is successfully observed
 
     def reset_poi(self):
         self.observer_distances = np.zeros(p["n_rovers"])
+        self.observed = False
 
     def update_observer_distances(self, rovers):
         for rov in rovers:

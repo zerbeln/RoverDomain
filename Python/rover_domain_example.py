@@ -138,8 +138,10 @@ def rover_difference():
 
     # Create dictionary for CCEA populations
     pops = {}
+    networks = {}
     for rover_id in range(p["n_rovers"]):
         pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork()
 
     # Perform runs
     run_times = []
@@ -159,43 +161,38 @@ def rover_difference():
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(p["pop_size"]):
                 # Reset rovers to initial conditions and select network weights
-                rover_poi_distances = [[] for i in range(p["n_poi"])]
-                for rk in rd.rovers:
-                    rd.rovers[rk].reset_rover()
-                    policy_id = int(pops["EA{0}".format(rd.rovers[rk].self_id)].team_selection[team_number])
-                    weights = pops["EA{0}".format(rd.rovers[rk].self_id)].population["pol{0}".format(policy_id)]
-                    rd.rovers[rk].get_weights(weights)
+                rd.reset_world()
+                for rv in rd.rovers:
+                    policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
+                    weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
+                    networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
                 poi_rewards = np.zeros((p["n_poi"], p["steps"]))
-                for step_id in range(p["steps"]):
-                    # Rovers scan environment to collect state information
-                    for rk in rd.rovers:
-                        rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    for poi in rd.pois:
-                        rd.pois[poi].update_observer_distances(rd.rovers)
-                        rover_poi_distances[rd.pois[poi].poi_id].append(rd.pois[poi].observer_distances)
+                for tstep in range(p["steps"]):
+                    # Get rover actions from neural network
+                    rover_actions = []
+                    for rv in rd.rovers:
+                        rover_id = rd.rovers[rv].rover_id
+                        action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                        rover_actions.append(action)
 
-                    # Calculate rewards at current time step
-                    step_rewards = rd.calc_global()
+                    # Rovers take action and make observations, environment returns global reward for current time step
+                    step_rewards = rd.step(rover_actions)
                     for poi_id in range(p["n_poi"]):
-                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-
-                    # Each rover acts according to policy
-                    for rk in rd.rovers:
-                        rd.rovers[rk].step(rd.world_x, rd.world_y)
+                        poi_rewards[poi_id, tstep] = step_rewards[poi_id]
 
                 # Update fitness of policies using reward information
                 g_reward = 0
                 for poi_id in range(p["n_poi"]):
                     g_reward += max(poi_rewards[poi_id])
-                d_rewards = calc_difference(rd.pois, g_reward, rover_poi_distances)
+                d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = d_rewards[rover_id]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
-                reward_history.append(sample_best_team(rd, pops))
+                reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
 
             # Choose new parents and create new offspring population
@@ -226,8 +223,10 @@ def rover_dpp():
 
     # Create dictionary for CCEA populations
     pops = {}
+    networks = {}
     for rover_id in range(p["n_rovers"]):
         pops["EA{0}".format(rover_id)] = Ccea(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
+        networks["NN{0}".format(rover_id)] = NeuralNetwork()
 
     # Perform runs
     run_times = []
@@ -246,43 +245,38 @@ def rover_dpp():
 
             # Each policy in CCEA is tested in randomly selected teams
             for team_number in range(p["pop_size"]):
-                rover_poi_distances = [[] for i in range(p["n_poi"])]
-                for rk in rd.rovers:
-                    rd.rovers[rk].reset_rover()
-                    policy_id = int(pops["EA{0}".format(rd.rovers[rk].self_id)].team_selection[team_number])
-                    weights = pops["EA{0}".format(rd.rovers[rk].self_id)].population["pol{0}".format(policy_id)]
-                    rd.rovers[rk].get_weights(weights)
+                rd.reset_world()
+                for rv in rd.rovers:
+                    policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
+                    weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
+                    networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
                 poi_rewards = np.zeros((p["n_poi"], p["steps"]))
-                for step_id in range(p["steps"]):
-                    # Rovers scan environment to collect state information
-                    for rk in rd.rovers:
-                        rd.rovers[rk].scan_environment(rd.rovers, rd.pois)
-                    for poi in rd.pois:
-                        rd.pois[poi].update_observer_distances(rd.rovers)
-                        rover_poi_distances[rd.pois[poi].poi_id].append(rd.pois[poi].observer_distances)
+                for tstep in range(p["steps"]):
+                    # Get rover actions from neural network
+                    rover_actions = []
+                    for rv in rd.rovers:
+                        rover_id = rd.rovers[rv].rover_id
+                        action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
+                        rover_actions.append(action)
 
-                    # Calculate rewards at current time step
-                    step_rewards = rd.calc_global()
+                    # Rovers take action and make observations, environment returns global reward for current time step
+                    step_rewards = rd.step(rover_actions)
                     for poi_id in range(p["n_poi"]):
-                        poi_rewards[poi_id, step_id] = step_rewards[poi_id]
-
-                    # Each rover acts according to policy
-                    for rk in rd.rovers:
-                        rd.rovers[rk].step(rd.world_x, rd.world_y)
+                        poi_rewards[poi_id, tstep] = step_rewards[poi_id]
 
                 # Update fitness of policies using reward information
                 g_reward = 0
                 for poi_id in range(p["n_poi"]):
                     g_reward += max(poi_rewards[poi_id])
-                dpp_rewards = calc_dpp(rd.pois, g_reward, rover_poi_distances)
+                dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = dpp_rewards[rover_id]
 
             # Testing Phase (test best agent team found so far) ------------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
-                reward_history.append(sample_best_team(rd, pops))
+                reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
 
             # Choose new parents and create new offspring population

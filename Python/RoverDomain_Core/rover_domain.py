@@ -13,12 +13,23 @@ class RoverDomain:
         self.n_pois = p["n_poi"]
         self.n_rovers = p["n_rovers"]
         self.obs_radius = p["observation_radius"]  # Maximum distance rovers can make observations of POI at
+        self.rover_poi_distances = [[] for i in range(self.n_rovers)]  # Tracks rover distances to POI at each time step
 
         # Rover Instances
         self.rovers = {}  # Dictionary containing instances of rover objects
 
         # POI Instances
         self.pois = {}  # Dictionary containing instances of PoI objects
+
+    def reset_world(self):
+        """
+        Reset world to initial conditions.
+        """
+        self.rover_poi_distances = [[] for i in range(self.n_rovers)]
+        for rv in self.rovers:
+            self.rovers[rv].reset_rover()
+        for poi in self.pois:
+            self.pois[poi].reset_poi()
 
     def load_world(self):
         """
@@ -127,6 +138,7 @@ class RoverDomain:
             self.rovers[rov].scan_environment(self.rovers, self.pois)
         for poi in self.pois:
             self.pois[poi].update_observer_distances(self.rovers)
+            self.rover_poi_distances[self.pois[poi].poi_id].append(self.pois[poi].observer_distances)
 
         global_reward = self.calc_global()
 
