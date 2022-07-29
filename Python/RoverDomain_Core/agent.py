@@ -14,10 +14,17 @@ class Poi:
         self.observed = False  # Boolean that indicates if a POI is successfully observed
 
     def reset_poi(self):
+        """
+        Clears the observer distances array and sets POI observed boolean back to False
+        """
         self.observer_distances = np.zeros(p["n_rovers"])
         self.observed = False
 
     def update_observer_distances(self, rovers):
+        """
+        Records the linear distances between rovers in the system and the POI for use in reward calculations
+        :param rovers: Dictionary containing rover class instances
+        """
         for rov in rovers:
             dist = get_linear_dist(rovers[rov].loc[0], rovers[rov].loc[1], self.loc[0], self.loc[1])
             self.observer_distances[rovers[rov].rover_id] = dist
@@ -43,7 +50,7 @@ class Rover:
 
     def reset_rover(self):
         """
-        Resets the rover to its initial position in the world
+        Resets the rover to its initial position in the world and clears observation array of state information
         """
         self.loc = self.initial_pos.copy()
         self.observations = np.zeros(self.n_inputs, dtype=np.float128)
@@ -51,6 +58,8 @@ class Rover:
     def scan_environment(self, rovers, pois):
         """
         Constructs the state information that gets passed to the rover's neuro-controller
+        :param rovers: Dictionary containing rover class instances
+        :param pois: Dictionary containing POI class instances
         """
         n_brackets = int(360.0 / self.sensor_res)
         poi_state = self.poi_scan(pois, n_brackets)
@@ -62,21 +71,24 @@ class Rover:
 
     def poi_scan(self, pois, n_brackets):
         """
-        Rover queries scanner that detects POIs
+        Rover observes POIs in the environment using sensors
+        :param pois: Dictionary containing POI class instances
+        :param n_brackets: integer value for the number of brackets/sectors rover sensors scan (resolution)
+        :return poi_state: numpy array containing state information for POI observations
         """
         poi_state = np.zeros(n_brackets)
         temp_poi_dist_list = [[] for _ in range(n_brackets)]
 
         # Log POI distances into brackets
         poi_id = 0
-        for pk in pois:
-            angle = get_angle(pois[pk].loc[0], pois[pk].loc[1], (p["x_dim"]/2), (p["y_dim"]/2))
-            dist = get_squared_dist(pois[pk].loc[0], pois[pk].loc[1], self.loc[0], self.loc[1])
+        for poi in pois:
+            angle = get_angle(pois[poi].loc[0], pois[poi].loc[1], (p["x_dim"]/2), (p["y_dim"]/2))
+            dist = get_squared_dist(pois[poi].loc[0], pois[poi].loc[1], self.loc[0], self.loc[1])
 
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
                 bracket -= n_brackets
-            temp_poi_dist_list[bracket].append(pois[pk].value / dist)
+            temp_poi_dist_list[bracket].append(pois[poi].value / dist)
             poi_id += 1
 
         # Encode POI information into the state vector
@@ -96,12 +108,15 @@ class Rover:
 
     def rover_scan(self, rovers, n_brackets):
         """
-        Rover activates scanner to detect other rovers within the environment
+        Rover observes other rovers in the environment using sensors
+        :param rovers: Dictionary containing rover class instances
+        :param n_brackets: integer value for the number of brackets/sectors rover sensors scan (resolution)
+        :return rover_state: numpy array containing state information for Rover observations
         """
         rover_state = np.zeros(n_brackets)
         temp_rover_dist_list = [[] for _ in range(n_brackets)]
 
-        # Log rover distances into brackets
+        # Log Rover distances into brackets
         for rv in rovers:
             if self.rover_id != rovers[rv].rover_id:  # Ignore self
                 rov_x = rovers[rv].loc[0]
@@ -129,6 +144,3 @@ class Rover:
                 rover_state[bracket] = -1.0
 
         return rover_state
-
-
-

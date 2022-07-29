@@ -1,7 +1,7 @@
 from ccea import Ccea
 from RoverDomain_Core.reward_functions import calc_difference, calc_dpp
 from RoverDomain_Core.rover_domain import RoverDomain
-from RoverDomain_Core.rover_neural_network import NeuralNetwork
+from rover_neural_network import NeuralNetwork
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, save_best_policies
@@ -12,12 +12,12 @@ def sample_best_team(rd, pops, networks):
     """
     Sample the performance of the team comprised of the best individuals discovered so far during the learning process
     :param rd: Instance of the rover domain
-    :param pops: CCEA populations
-    :return: global reward for team of best individuals
+    :param pops: Dictionary containing CCEA populations
+    :param networks: Dictionary containing rover neural networks
+    :return: Episodic global reward for team of best individuals
     """
-    # Reset rovers to initial conditions
-    for rv in rd.rovers:
-        rd.rovers[rv].reset_rover()
+    # Reset world to initial conditions
+    rd.reset_world()
 
     # Rover runs initial scan of environment and selects network weights
     for rv in rd.rovers:
@@ -75,14 +75,14 @@ def rover_global():
 
             # Test each team from CCEA
             for team_number in range(p["pop_size"]):
-                # Reset rovers to initial conditions and select network weights
+                # Reset world to initial conditions and select network weights
+                rd.reset_world()
                 for rv in rd.rovers:
-                    rd.rovers[rv].reset_rover()
                     policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
                     networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
-                poi_rewards = np.zeros((p["n_poi"], p["steps"]))
+                poi_rewards = np.zeros((p["n_poi"], p["steps"]))  # Track best POI rewards across all time steps
                 for tstep in range(p["steps"]):
                     # Get rover actions from neural network
                     rover_actions = []
@@ -91,7 +91,7 @@ def rover_global():
                         action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
                         rover_actions.append(action)
 
-                    # Rovers take action and make observations, environment returns global reward for current time step
+                    # Environment takes in rover actions and returns global reward and next state
                     step_rewards = rd.step(rover_actions)
                     for poi_id in range(p["n_poi"]):
                         poi_rewards[poi_id, tstep] = step_rewards[poi_id]
@@ -99,12 +99,12 @@ def rover_global():
                 # Update fitness of policies using reward information
                 g_reward = 0
                 for poi_id in range(p["n_poi"]):
-                     g_reward += max(poi_rewards[poi_id])
+                     g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = g_reward
 
-            # Testing Phase (test best agent team found so far) ------------------------------------------------------
+            # Testing Phase (sample best agent team found so far) ----------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
@@ -158,16 +158,16 @@ def rover_difference():
             for pkey in pops:
                 pops[pkey].select_policy_teams()
 
-            # Each policy in CCEA is tested in randomly selected teams
+            # Test each team from CCEA
             for team_number in range(p["pop_size"]):
-                # Reset rovers to initial conditions and select network weights
+                # Reset world to initial conditions and select network weights
                 rd.reset_world()
                 for rv in rd.rovers:
                     policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
                     networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
-                poi_rewards = np.zeros((p["n_poi"], p["steps"]))
+                poi_rewards = np.zeros((p["n_poi"], p["steps"]))  # Track best POI rewards across all time steps
                 for tstep in range(p["steps"]):
                     # Get rover actions from neural network
                     rover_actions = []
@@ -176,7 +176,7 @@ def rover_difference():
                         action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
                         rover_actions.append(action)
 
-                    # Rovers take action and make observations, environment returns global reward for current time step
+                    # Environment takes in rover actions and returns global reward and next state
                     step_rewards = rd.step(rover_actions)
                     for poi_id in range(p["n_poi"]):
                         poi_rewards[poi_id, tstep] = step_rewards[poi_id]
@@ -184,13 +184,13 @@ def rover_difference():
                 # Update fitness of policies using reward information
                 g_reward = 0
                 for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])
+                    g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
                 d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = d_rewards[rover_id]
 
-            # Testing Phase (test best agent team found so far) ------------------------------------------------------
+            # Testing Phase (sample best agent team found so far) ----------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------
@@ -243,15 +243,16 @@ def rover_dpp():
             for pkey in pops:
                 pops[pkey].select_policy_teams()
 
-            # Each policy in CCEA is tested in randomly selected teams
+            # Test each team from CCEA
             for team_number in range(p["pop_size"]):
+                # Reset world to initial conditions and select network weights
                 rd.reset_world()
                 for rv in rd.rovers:
                     policy_id = int(pops["EA{0}".format(rd.rovers[rv].rover_id)].team_selection[team_number])
                     weights = pops["EA{0}".format(rd.rovers[rv].rover_id)].population["pol{0}".format(policy_id)]
                     networks["NN{0}".format(rd.rovers[rv].rover_id)].get_weights(weights)
 
-                poi_rewards = np.zeros((p["n_poi"], p["steps"]))
+                poi_rewards = np.zeros((p["n_poi"], p["steps"]))  # Track best POI rewards across all time steps
                 for tstep in range(p["steps"]):
                     # Get rover actions from neural network
                     rover_actions = []
@@ -260,7 +261,7 @@ def rover_dpp():
                         action = networks["NN{0}".format(rover_id)].run_rover_nn(rd.rovers[rv].observations)
                         rover_actions.append(action)
 
-                    # Rovers take action and make observations, environment returns global reward for current time step
+                    # Environment takes in rover actions and returns global reward and next state
                     step_rewards = rd.step(rover_actions)
                     for poi_id in range(p["n_poi"]):
                         poi_rewards[poi_id, tstep] = step_rewards[poi_id]
@@ -268,13 +269,13 @@ def rover_dpp():
                 # Update fitness of policies using reward information
                 g_reward = 0
                 for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])
+                    g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
                 dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = dpp_rewards[rover_id]
 
-            # Testing Phase (test best agent team found so far) ------------------------------------------------------
+            # Testing Phase (sample best agent team found so far) ----------------------------------------------------
             if gen % p["sample_rate"] == 0 or gen == p["generations"] - 1:
                 reward_history.append(sample_best_team(rd, pops, networks))
             # --------------------------------------------------------------------------------------------------------

@@ -6,7 +6,11 @@ from parameters import parameters as p
 # DIFFERENCE REWARD --------------------------------------------------------------------------------------------------
 def calc_difference(pois, global_reward, rov_poi_dist):
     """
-    Calculate each rover's difference reward
+    Calculate each rover's difference reward for the current episode
+    :param pois: Dictionary containing POI class instances
+    :param global_reward: Episodic global reward
+    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
+    :return difference_rewards: Numpy array containing each rover's difference reward
     """
     difference_rewards = np.zeros(p["n_rovers"])
     for agent_id in range(p["n_rovers"]):
@@ -43,6 +47,10 @@ def calc_difference(pois, global_reward, rov_poi_dist):
 def calc_dpp(pois, global_reward, rov_poi_dist):
     """
     Calculate D++ rewards for each rover
+    :param pois: Dictionary containing POI class instances
+    :param global_reward: Episodic global reward
+    :param rov_poi_dist: Array containing distances between POI and rovers for entire episode
+    :return dpp_rewards: Numpy array containing each rover's D++ reward
     """
     d_rewards = calc_difference(pois, global_reward, rov_poi_dist)
     rewards = np.zeros(p["n_rovers"])  # This is just a temporary reward tracker for iterations of counterfactuals

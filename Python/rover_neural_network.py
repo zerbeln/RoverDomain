@@ -16,6 +16,7 @@ class NeuralNetwork:
     def get_weights(self, nn_weights):
         """
         Apply chosen network weights to the agent's neuro-controller
+        :param nn_weights: Rover neural network weights taken from learning algorithm
         """
         self.weights["Layer1"] = np.reshape(np.mat(nn_weights["L1"]), [self.n_hnodes, self.n_inputs])
         self.weights["Layer2"] = np.reshape(np.mat(nn_weights["L2"]), [self.n_outputs, self.n_hnodes])
@@ -24,7 +25,8 @@ class NeuralNetwork:
 
     def get_nn_inputs(self, sensor_data):
         """
-        Take in state information collected by rover
+        Take in state information collected by rover and assign to input layer of network
+        :param sensor_data: array containing state information from rover observations of the current state
         """
         for i in range(self.n_inputs):
             self.input_layer[i, 0] = sensor_data[i]
@@ -42,8 +44,8 @@ class NeuralNetwork:
     def run_rover_nn(self, sensor_data):
         """
         Run neural network using state information, return rover actions
-        :param sensor_data: observation of current world state
-        :return: rover actions for next time step
+        :param sensor_data: array containing state information from rover observations of the current state
+        :return: array containing rover's next actions
         """
         self.get_nn_inputs(sensor_data)
         self.get_nn_outputs()

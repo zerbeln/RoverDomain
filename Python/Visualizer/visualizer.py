@@ -49,7 +49,7 @@ def import_poi_information(n_poi):
     Import POI information from saved configuration files
     :return:
     """
-    pois = np.zeros((n_poi, 5))
+    pois = np.zeros((n_poi, 4))
 
     config_input = []
     with open('./World_Config/POI_Config.csv') as csvfile:
@@ -63,7 +63,6 @@ def import_poi_information(n_poi):
         pois[poi_id, 1] = float(config_input[poi_id][1])
         pois[poi_id, 2] = float(config_input[poi_id][2])
         pois[poi_id, 3] = float(config_input[poi_id][3])
-        pois[poi_id, 4] = float(config_input[poi_id][4])
 
     return pois
 
@@ -89,8 +88,8 @@ def run_visualizer(v_running=False):
     image_adjust = 100  # Adjusts the image so that everything is centered
     pygame.init()
     pygame.display.set_caption('Rover Domain')
-    robot_image = pygame.image.load('./Visualizer/rover.png')
-    background = pygame.image.load('./Visualizer/background.png')
+    robot_image = pygame.image.load('Visualizer/rover.png')
+    background = pygame.image.load('Visualizer/background.png')
     color_array = generate_color_array(3)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
@@ -166,7 +165,7 @@ def run_visualizer(v_running=False):
         if counter == 0:
             poi_convergence[n_poi] += 1
 
-        dir_name = 'Screenshots/'  # Intended directory for output files
+        dir_name = './Screenshots/'  # Intended directory for output files
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it
             os.makedirs(dir_name)
         image_name = "Screenshot_SR" + str(srun) + ".jpg"
