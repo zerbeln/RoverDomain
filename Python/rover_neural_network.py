@@ -8,9 +8,9 @@ class NeuralNetwork:
         self.n_outputs = p["n_out"]  # Number of nodes in output layer
         self.n_hnodes = p["n_hid"]  # Number of nodes in hidden layer
         self.weights = {}
-        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.float128)), [self.n_inputs, 1])
-        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.float128)), [self.n_hnodes, 1])
-        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.float128)), [self.n_outputs, 1])
+        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.longdouble)), [self.n_inputs, 1])
+        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.longdouble)), [self.n_hnodes, 1])
+        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.longdouble)), [self.n_outputs, 1])
 
     # Rover Control NN ------------------------------------------------------------------------------------------------
     def get_weights(self, nn_weights):

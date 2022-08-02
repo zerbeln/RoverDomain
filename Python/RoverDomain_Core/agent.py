@@ -45,15 +45,15 @@ class Rover:
         self.n_inputs = p["n_inp"]  # Number of inputs for rover's neural network
 
         # Rover Data -----------------------------------------------------------------------------------------
-        self.observations = np.zeros(p["n_inp"], dtype=np.float128)  # Number of sensor inputs for Neural Network
-        self.rover_actions = np.zeros(p["n_out"], dtype=np.float128)  # Motor actions from neural network outputs
+        self.observations = np.zeros(p["n_inp"], dtype=np.longdouble)  # Number of sensor inputs for Neural Network
+        self.rover_actions = np.zeros(p["n_out"], dtype=np.longdouble)  # Motor actions from neural network outputs
 
     def reset_rover(self):
         """
         Resets the rover to its initial position in the world and clears observation array of state information
         """
         self.loc = self.initial_pos.copy()
-        self.observations = np.zeros(self.n_inputs, dtype=np.float128)
+        self.observations = np.zeros(self.n_inputs, dtype=np.longdouble)
 
     def scan_environment(self, rovers, pois):
         """
