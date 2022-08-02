@@ -1,5 +1,5 @@
 from parameters import parameters as p
-from rover_domain_example import rover_global, rover_difference, rover_dpp
+from rover_domain_example import rover_global, rover_difference, rover_dpp, test_trained_policies
 
 
 if __name__ == '__main__':
@@ -16,5 +16,8 @@ if __name__ == '__main__':
     elif p["algorithm"] == "DPP":
         print("Rover Domain: D++ Rewards")
         rover_dpp()
+    elif p["algorithm"] == "Test":
+        print("Rover Domain: Testing Trained Policies")
+        test_trained_policies()
     else:
         print("ALGORITHM TYPE ERROR")

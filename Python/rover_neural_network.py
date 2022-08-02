@@ -3,10 +3,10 @@ from parameters import parameters as p
 
 
 class NeuralNetwork:
-    def __init__(self):
-        self.n_inputs = p["n_inp"]  # Number of nodes in input layer
-        self.n_outputs = p["n_out"]  # Number of nodes in output layer
-        self.n_hnodes = p["n_hid"]  # Number of nodes in hidden layer
+    def __init__(self, n_inp=8, n_hid=10, n_out=2):
+        self.n_inputs = n_inp  # Number of nodes in input layer
+        self.n_outputs = n_out  # Number of nodes in output layer
+        self.n_hnodes = n_hid  # Number of nodes in hidden layer
         self.weights = {}
         self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.longdouble)), [self.n_inputs, 1])
         self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.longdouble)), [self.n_hnodes, 1])
