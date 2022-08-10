@@ -5,7 +5,6 @@ from rover_neural_network import NeuralNetwork
 import numpy as np
 from parameters import parameters as p
 from global_functions import create_csv_file, save_best_policies, load_saved_policies, create_pickle_file
-import time
 from Visualizer.visualizer import run_visualizer
 
 
@@ -60,11 +59,8 @@ def rover_global():
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
-    run_times = []
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
-        start_time = time.time()
-
         # Create new CCEA populations
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -99,8 +95,8 @@ def rover_global():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                     g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
+                for p_reward in poi_rewards:
+                     g_reward += max(p_reward)  # Calculate episodic global reward
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
                     pops["EA{0}".format(rover_id)].fitness[policy_id] = g_reward
@@ -122,10 +118,6 @@ def rover_global():
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
         srun += 1
-        end_time = time.time()
-        run_times.append(end_time - start_time)
-
-    create_csv_file(run_times, "Output_Data/", "GlobalRunTimes.csv")
 
 
 def rover_difference():
@@ -145,11 +137,8 @@ def rover_difference():
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
-    run_times = []
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:
-        start_time = time.time()
-
         # Create new population of policies for each rover
         for pkey in pops:
             pops[pkey].create_new_population()
@@ -184,8 +173,8 @@ def rover_difference():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
+                for p_reward in poi_rewards:
+                    g_reward += max(p_reward)  # Calculate episodic global reward
                 d_rewards = calc_difference(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -208,10 +197,6 @@ def rover_difference():
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
         srun += 1
-        end_time = time.time()
-        run_times.append(end_time - start_time)
-
-    create_csv_file(run_times, "Output_Data/", "DifferenceRunTimes.csv")
 
 
 def rover_dpp():
@@ -230,10 +215,8 @@ def rover_dpp():
         networks["NN{0}".format(rover_id)] = NeuralNetwork(n_inp=p["n_inp"], n_hid=p["n_hid"], n_out=p["n_out"])
 
     # Perform runs
-    run_times = []
     srun = p["starting_srun"]
     while srun < p["stat_runs"]:  # Perform statistical runs
-        start_time = time.time()
 
         # Create new population of policies for each rover
         for pkey in pops:
@@ -269,8 +252,8 @@ def rover_dpp():
 
                 # Update fitness of policies using reward information
                 g_reward = 0
-                for poi_id in range(p["n_poi"]):
-                    g_reward += max(poi_rewards[poi_id])  # Calculate episodic global reward
+                for p_reward in poi_rewards:
+                    g_reward += max(p_reward)  # Calculate episodic global reward
                 dpp_rewards = calc_dpp(rd.pois, g_reward, rd.rover_poi_distances)
                 for rover_id in range(p["n_rovers"]):
                     policy_id = int(pops["EA{0}".format(rover_id)].team_selection[team_number])
@@ -293,10 +276,6 @@ def rover_dpp():
             save_best_policies(weights, srun, "RoverWeights{0}".format(rover_id), rover_id)
 
         srun += 1
-        end_time = time.time()
-        run_times.append(end_time - start_time)
-
-    create_csv_file(run_times, "Output_Data/", "DPPRunTimes.csv")
 
 
 def test_trained_policies():
@@ -349,8 +328,8 @@ def test_trained_policies():
 
         # Calculate episodic global reward
         g_reward = 0
-        for poi_id in range(p["n_poi"]):
-            g_reward += max(poi_rewards[poi_id])
+        for p_reward in poi_rewards:
+            g_reward += max(p_reward)  # Calculate episodic global reward
         reward_history.append(g_reward)
         average_reward += g_reward
         srun += 1

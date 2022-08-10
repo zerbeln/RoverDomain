@@ -82,7 +82,7 @@ class Rover:
         # Log POI distances into brackets
         poi_id = 0
         for poi in pois:
-            angle = get_angle(pois[poi].loc[0], pois[poi].loc[1], (p["x_dim"]/2), (p["y_dim"]/2))
+            angle = get_angle(pois[poi].loc[0], pois[poi].loc[1], self.loc[0], self.loc[1])
             dist = get_squared_dist(pois[poi].loc[0], pois[poi].loc[1], self.loc[0], self.loc[1])
 
             bracket = int(angle / self.sensor_res)
@@ -122,7 +122,7 @@ class Rover:
                 rov_x = rovers[rv].loc[0]
                 rov_y = rovers[rv].loc[1]
 
-                angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
+                angle = get_angle(rov_x, rov_y, self.loc[0], self.loc[1])
                 dist = get_squared_dist(rov_x, rov_y, self.loc[0], self.loc[1])
 
                 bracket = int(angle / self.sensor_res)
