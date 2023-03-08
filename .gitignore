@@ -4,6 +4,11 @@ __pycache__/
 *$py.class
 .idea/
 
+# Rover Domain Generated Directories
+Screenshots/
+Output_Data/
+World_Config/
+
 # C extensions
 *.so
 
