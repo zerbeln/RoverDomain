@@ -4,8 +4,8 @@ import copy
 from parameters import parameters as p
 
 
-class Ccea:
-    def __init__(self, n_inp=8, n_out=2, n_hid=10):
+class EA:
+    def __init__(self, n_inp=8, n_hid=10, n_out=2):
         self.population = {}
         self.pop_size = p["pop_size"]
         self.mut_rate = p["mutation_rate"]
@@ -13,7 +13,6 @@ class Ccea:
         self.eps = p["epsilon"]
         self.fitness = np.zeros(self.pop_size)
         self.n_elites = p["n_elites"]  # Number of elites selected from each gen
-        self.team_selection = np.ones(self.pop_size) * (-1)
 
         # Network Parameters that determine the number of weights to evolve
         self.n_inputs = n_inp
@@ -25,7 +24,6 @@ class Ccea:
         """
         Clear fitness vector of stored values
         """
-
         self.fitness = np.zeros(self.pop_size)
 
     def create_new_population(self):  # Re-initializes CCEA populations for new run
@@ -43,13 +41,6 @@ class Ccea:
             policy["b2"] = np.random.normal(0, 1, self.n_outputs)
 
             self.population["pol{0}".format(pol_id)] = copy.deepcopy(policy)
-
-    def select_policy_teams(self):
-        """
-        Determines which individuals from each population get paired together
-        """
-
-        self.team_selection = random.sample(range(self.pop_size), self.pop_size)
 
     def weight_mutate(self):
         """
@@ -187,4 +178,3 @@ class Ccea:
         # self.random_selection()
 
         self.weight_mutate()  # Mutate successors
-

@@ -29,13 +29,13 @@ def generate_color_array(num_colors):  # Generates num random colors
     return color_arr
 
 
-def import_rover_paths():
+def import_rover_paths(config_id):
     """
     Import rover paths from pickle file
     :return:
     """
     dir_name = 'Output_Data/'
-    file_name = 'Rover_Paths'
+    file_name = 'Rover_Paths{0}'.format(config_id)
     rover_path_file = os.path.join(dir_name, file_name)
     infile = open(rover_path_file, 'rb')
     rover_paths = pickle.load(infile)
@@ -44,7 +44,7 @@ def import_rover_paths():
     return rover_paths
 
 
-def import_poi_information(n_poi):
+def import_poi_information(n_poi, config_id):
     """
     Import POI information from saved configuration files
     :return:
@@ -52,7 +52,7 @@ def import_poi_information(n_poi):
     pois = np.zeros((n_poi, 4))
 
     config_input = []
-    with open('./World_Config/POI_Config.csv') as csvfile:
+    with open('./World_Config/POI_Config{0}.csv'.format(config_id)) as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
 
         for row in csv_reader:
@@ -67,7 +67,7 @@ def import_poi_information(n_poi):
     return pois
 
 
-def run_visualizer(v_running=False):
+def run_visualizer(v_running=False, cf_id=0):
     """
     Run the visualizer that plots each rover's trajectory in the domain
     :return:
@@ -90,12 +90,12 @@ def run_visualizer(v_running=False):
     pygame.display.set_caption('Rover Domain')
     robot_image = pygame.image.load('Visualizer/rover.png')
     background = pygame.image.load('Visualizer/background.png')
-    color_array = generate_color_array(3)
+    color_array = generate_color_array(17)
     pygame.font.init() 
     myfont = pygame.font.SysFont('Comic Sans MS', 30)
 
-    rover_path = import_rover_paths()
-    pois = import_poi_information(n_poi)
+    rover_path = import_rover_paths(cf_id)
+    pois = import_poi_information(n_poi, cf_id)
 
     poi_convergence = [0 for i in range(n_poi + 1)]
     for srun in range(stat_runs):
@@ -168,7 +168,7 @@ def run_visualizer(v_running=False):
         dir_name = './Screenshots/'  # Intended directory for output files
         if not os.path.exists(dir_name):  # If Data directory does not exist, create it
             os.makedirs(dir_name)
-        image_name = "Screenshot_SR" + str(srun) + ".jpg"
+        image_name = "Screenshot_SR" + str(srun) + "_C" + str(cf_id) + ".jpg"
         screenshot_filename = os.path.join(dir_name, image_name)
 
         pygame.image.save(game_display, screenshot_filename)

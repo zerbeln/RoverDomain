@@ -1,10 +1,11 @@
 from parameters import parameters as p
-from rover_domain_example import rover_global, rover_difference, rover_dpp, test_trained_policies
+from standard_rover_domain import rover_global, rover_difference, rover_dpp
 
 
 if __name__ == '__main__':
     """
-    Run classic rove domain using either G, D, or D++ for reward feedback.
+    Run classic or tightly coupled rover domain using either G, D, D++, or CFL
+    This main file is for use with rovers learning navigation (not skills)
     """
 
     if p["algorithm"] == "Global":
@@ -16,8 +17,5 @@ if __name__ == '__main__':
     elif p["algorithm"] == "DPP":
         print("Rover Domain: D++ Rewards")
         rover_dpp()
-    elif p["algorithm"] == "Test":
-        print("Rover Domain: Testing Trained Policies")
-        test_trained_policies()
     else:
         print("ALGORITHM TYPE ERROR")

@@ -64,7 +64,6 @@ def calc_dpp(pois, global_reward, rov_poi_dist):
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
                 observer_count = 0
-                # print(rov_poi_dist[pois[pk].poi_id][step])
                 rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
                 counterfactual_rovers = np.ones(int(n_counters)) * rover_distances[agent_id]
                 rover_distances = np.append(rover_distances, counterfactual_rovers)

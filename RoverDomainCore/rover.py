@@ -1,33 +1,7 @@
 import numpy as np
 import sys
 from parameters import parameters as p
-from global_functions import get_linear_dist, get_squared_dist, get_angle
-
-
-class Poi:
-    def __init__(self, px, py, p_val, pc, p_id):
-        self.poi_id = p_id  # POI Identifier
-        self.loc = [px, py]  # Location of the POI
-        self.value = p_val  # POI Value
-        self.coupling = pc  # POI coupling requirement
-        self.observer_distances = np.zeros(p["n_rovers"])  # Keeps track of rover distances
-        self.observed = False  # Boolean that indicates if a POI is successfully observed
-
-    def reset_poi(self):
-        """
-        Clears the observer distances array and sets POI observed boolean back to False
-        """
-        self.observer_distances = np.zeros(p["n_rovers"])
-        self.observed = False
-
-    def update_observer_distances(self, rovers):
-        """
-        Records the linear distances between rovers in the system and the POI for use in reward calculations
-        :param rovers: Dictionary containing rover class instances
-        """
-        for rov in rovers:
-            dist = get_linear_dist(rovers[rov].loc[0], rovers[rov].loc[1], self.loc[0], self.loc[1])
-            self.observer_distances[rovers[rov].rover_id] = dist
+from global_functions import get_squared_dist, get_angle
 
 
 class Rover:
@@ -35,7 +9,6 @@ class Rover:
         # Rover Parameters -----------------------------------------------------------------------------------
         self.rover_id = rov_id  # Rover identifier
         self.loc = [rov_x, rov_y, rov_theta]  # Rover location
-        self.initial_pos = [rov_x, rov_y, rov_theta]  # Keeps initial position of rover stored for quick reset
         self.dmax = p["dmax"]  # Maximum distance a rover can move each time step
 
         # Rover Sensor Characteristics -----------------------------------------------------------------------
@@ -48,11 +21,13 @@ class Rover:
         self.observations = np.zeros(p["n_inp"], dtype=np.longdouble)  # Number of sensor inputs for Neural Network
         self.rover_actions = np.zeros(p["n_out"], dtype=np.longdouble)  # Motor actions from neural network outputs
 
-    def reset_rover(self):
+    def reset_rover(self, rover_config):
         """
         Resets the rover to its initial position in the world and clears observation array of state information
         """
-        self.loc = self.initial_pos.copy()
+        self.loc[0] = rover_config[0]
+        self.loc[1] = rover_config[1]
+        self.loc[2] = rover_config[2]
         self.observations = np.zeros(self.n_inputs, dtype=np.longdouble)
 
     def scan_environment(self, rovers, pois):
@@ -82,21 +57,20 @@ class Rover:
         # Log POI distances into brackets
         poi_id = 0
         for poi in pois:
-            angle = get_angle(pois[poi].loc[0], pois[poi].loc[1], self.loc[0], self.loc[1])
+            angle = get_angle(pois[poi].loc[0], pois[poi].loc[1], (p["x_dim"]/2), (p["y_dim"]/2))
             dist = get_squared_dist(pois[poi].loc[0], pois[poi].loc[1], self.loc[0], self.loc[1])
 
             bracket = int(angle / self.sensor_res)
             if bracket > n_brackets-1:
                 bracket -= n_brackets
-            temp_poi_dist_list[bracket].append(pois[poi].value / dist)
+            temp_poi_dist_list[bracket].append(pois[poi].value/dist)
             poi_id += 1
 
         # Encode POI information into the state vector
         for bracket in range(n_brackets):
-            num_poi_bracket = len(temp_poi_dist_list[bracket])  # Number of POIs in bracket
-            if num_poi_bracket > 0:
+            if len(temp_poi_dist_list[bracket]) > 0:
                 if self.sensor_type == 'density':
-                    poi_state[bracket] = sum(temp_poi_dist_list[bracket]) / num_poi_bracket  # Density Sensor
+                    poi_state[bracket] = sum(temp_poi_dist_list[bracket])/len(temp_poi_dist_list[bracket])  # Density Sensor
                 elif self.sensor_type == 'summed':
                     poi_state[bracket] = sum(temp_poi_dist_list[bracket])  # Summed Distance Sensor
                 else:
@@ -122,20 +96,19 @@ class Rover:
                 rov_x = rovers[rv].loc[0]
                 rov_y = rovers[rv].loc[1]
 
-                angle = get_angle(rov_x, rov_y, self.loc[0], self.loc[1])
+                angle = get_angle(rov_x, rov_y, p["x_dim"]/2, p["y_dim"]/2)
                 dist = get_squared_dist(rov_x, rov_y, self.loc[0], self.loc[1])
 
                 bracket = int(angle / self.sensor_res)
                 if bracket > n_brackets-1:
                     bracket -= n_brackets
-                temp_rover_dist_list[bracket].append(1 / dist)
+                temp_rover_dist_list[bracket].append(1/dist)
 
         # Encode Rover information into the state vector
         for bracket in range(n_brackets):
-            num_rovers_bracket = len(temp_rover_dist_list[bracket])  # Number of rovers in bracket
-            if num_rovers_bracket > 0:
+            if len(temp_rover_dist_list[bracket]) > 0:
                 if self.sensor_type == 'density':
-                    rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / num_rovers_bracket  # Density Sensor
+                    rover_state[bracket] = sum(temp_rover_dist_list[bracket]) / len(temp_rover_dist_list[bracket])  # Density Sensor
                 elif self.sensor_type == 'summed':
                     rover_state[bracket] = sum(temp_rover_dist_list[bracket])  # Summed Distance Sensor
                 else:
