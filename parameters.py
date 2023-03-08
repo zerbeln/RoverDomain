@@ -2,7 +2,7 @@ parameters = {}
 
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
-parameters["stat_runs"] = 15  # Total number of runs to perform
+parameters["stat_runs"] = 1  # Total number of runs to perform
 parameters["generations"] = 3000  # Number of generations for CCEA in each stat run
 parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++)
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
@@ -11,12 +11,12 @@ parameters["n_configurations"] = 1  # The number of environmental configurations
 # Domain parameters
 parameters["x_dim"] = 50.0  # Width of the rover map
 parameters["y_dim"] = 50.0  # Height of the rover map
-parameters["n_rovers"] = 12  # Number of rover agents on map
-parameters["n_poi"] = 10   # Number of POIs on map
+parameters["n_rovers"] = 2  # Number of rover agents on map
+parameters["n_poi"] = 2   # Number of POIs on map
 parameters["steps"] = 30  # Number of time steps rovers take each episode
 parameters["world_setup"] = "All"  # Rover_Only, All
-parameters["poi_config_type"] = "Random"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
-parameters["rover_config_type"] = "Random"  # Random, Concentrated, Fixed
+parameters["poi_config_type"] = "Two_POI_LR"  # Random, Two_POI_LR, Twp_POI_TB, Four_Corners, Circle
+parameters["rover_config_type"] = "Concentrated"  # Random, Concentrated, Fixed
 
 # Rover Parameters
 parameters["sensor_model"] = "summed"  # Should either be "density" or "summed"
