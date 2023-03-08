@@ -8,6 +8,7 @@ __pycache__/
 Screenshots/
 Output_Data/
 World_Config/
+Rover_Policies/
 
 # C extensions
 *.so
