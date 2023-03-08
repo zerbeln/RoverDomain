@@ -1,5 +1,7 @@
 from parameters import parameters as p
 from rover_training import rover_global, rover_difference, rover_dpp
+from Visualizer.turtle_visualizer import run_rover_visualizer
+from Visualizer.visualizer import run_visualizer
 
 
 if __name__ == '__main__':
@@ -19,3 +21,6 @@ if __name__ == '__main__':
         rover_dpp()
     else:
         print("ALGORITHM TYPE ERROR")
+
+    # run_visualizer(0)
+    run_rover_visualizer(0)
