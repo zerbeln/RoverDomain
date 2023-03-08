@@ -87,7 +87,7 @@ def load_saved_policies(file_name, rover_id, srun):
     Load saved Neural Network policies from pickle file
     """
 
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
+    dir_name = 'Rover_Policies/Rover{0}/SRUN{1}'.format(rover_id, srun)
     fpath_name = os.path.join(dir_name, file_name)
     weight_file = open(fpath_name, 'rb')
     weights = pickle.load(weight_file)
@@ -101,13 +101,13 @@ def save_best_policies(network_weights, srun, file_name, rover_id):
     Save trained neural networks for each rover as a pickle file
     """
     # Make sure Policy Bank Folder Exists
-    if not os.path.exists('Policy_Bank'):  # If Data directory does not exist, create it
-        os.makedirs('Policy_Bank')
+    if not os.path.exists('Rover_Policies'):  # If Data directory does not exist, create it
+        os.makedirs('Rover_Policies')
 
-    if not os.path.exists('Policy_Bank/Rover{0}'.format(rover_id)):
-        os.makedirs('Policy_Bank/Rover{0}'.format(rover_id))
+    if not os.path.exists('Rover_Policies/Rover{0}'.format(rover_id)):
+        os.makedirs('Rover_Policies/Rover{0}'.format(rover_id))
 
-    dir_name = 'Policy_Bank/Rover{0}/SRUN{1}'.format(rover_id, srun)
+    dir_name = 'Rover_Policies/Rover{0}/SRUN{1}'.format(rover_id, srun)
     if not os.path.exists(dir_name):  # If Data directory does not exist, create it
         os.makedirs(dir_name)
 
