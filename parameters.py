@@ -3,8 +3,8 @@ parameters = {}
 # Test Parameters
 parameters["starting_srun"] = 0  # Which stat run should testing start on (used for parallel testing)
 parameters["stat_runs"] = 1  # Total number of runs to perform
-parameters["generations"] = 3000  # Number of generations for CCEA in each stat run
-parameters["algorithm"] = "DPP"  # Global, Difference, DPP (D++)
+parameters["generations"] = 20  # Number of generations for CCEA in each stat run
+parameters["algorithm"] = "Global"  # Global, Difference, DPP (D++)
 parameters["sample_rate"] = 20  # Spacing for collecting performance data during training (every X generations)
 parameters["n_configurations"] = 1  # The number of environmental configurations used for training
 

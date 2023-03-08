@@ -1,5 +1,5 @@
 from parameters import parameters as p
-from standard_rover_domain import rover_global, rover_difference, rover_dpp
+from rover_training import rover_global, rover_difference, rover_dpp
 
 
 if __name__ == '__main__':
