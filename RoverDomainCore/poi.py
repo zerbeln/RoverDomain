@@ -27,7 +27,6 @@ class POI:
     def update_observer_distances(self, rovers):
         """
         Records the linear distances between rovers in the system and the POI for use in reward calculations
-        :param rovers: Dictionary containing rover class instances
         """
         for rov in rovers:
             dist = get_linear_dist(rovers[rov].loc[0], rovers[rov].loc[1], self.loc[0], self.loc[1])

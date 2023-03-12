@@ -15,17 +15,15 @@ class NeuralNetwork:
     def get_weights(self, nn_weights):
         """
         Apply chosen network weights to the agent's neuro-controller
-        :param nn_weights: Rover neural network weights taken from learning algorithm
         """
-        self.weights["Layer1"] = np.reshape(np.mat(nn_weights["L1"]), [self.n_hnodes, self.n_inputs])
-        self.weights["Layer2"] = np.reshape(np.mat(nn_weights["L2"]), [self.n_outputs, self.n_hnodes])
-        self.weights["input_bias"] = np.reshape(np.mat(nn_weights["b1"]), [self.n_hnodes, 1])
-        self.weights["hidden_bias"] = np.reshape(np.mat(nn_weights["b2"]), [self.n_outputs, 1])
+        self.weights['Layer1'] = np.reshape(np.mat(nn_weights['L1']), [self.n_hnodes, self.n_inputs])
+        self.weights['Layer2'] = np.reshape(np.mat(nn_weights['L2']), [self.n_outputs, self.n_hnodes])
+        self.weights['input_bias'] = np.reshape(np.mat(nn_weights['b1']), [self.n_hnodes, 1])
+        self.weights['hidden_bias'] = np.reshape(np.mat(nn_weights['b2']), [self.n_outputs, 1])
 
     def get_nn_inputs(self, sensor_data):
         """
         Take in state information collected by rover and assign to input layer of network
-        :param sensor_data: array containing state information from rover observations of the current state
         """
         for i in range(self.n_inputs):
             self.input_layer[i, 0] = sensor_data[i]
@@ -34,17 +32,15 @@ class NeuralNetwork:
         """
         Run rover NN to generate actions
         """
-        self.hidden_layer = np.dot(self.weights["Layer1"], self.input_layer) + self.weights["input_bias"]
+        self.hidden_layer = np.dot(self.weights['Layer1'], self.input_layer) + self.weights['input_bias']
         self.hidden_layer = self.sigmoid(self.hidden_layer)
 
-        self.output_layer = np.dot(self.weights["Layer2"], self.hidden_layer) + self.weights["hidden_bias"]
+        self.output_layer = np.dot(self.weights['Layer2'], self.hidden_layer) + self.weights['hidden_bias']
         self.output_layer = self.sigmoid(self.output_layer)
 
     def run_rover_nn(self, sensor_data):
         """
         Run neural network using state information, return rover actions
-        :param sensor_data: array containing state information from rover observations of the current state
-        :return: array containing rover's next actions
         """
         self.get_nn_inputs(sensor_data)
         self.get_nn_outputs()

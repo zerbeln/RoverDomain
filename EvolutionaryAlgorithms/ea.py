@@ -35,12 +35,12 @@ class EA:
 
         for pol_id in range(self.pop_size):
             policy = {}
-            policy["L1"] = np.random.normal(0, 1, self.n_inputs * self.n_hidden)
-            policy["L2"] = np.random.normal(0, 1, self.n_hidden * self.n_outputs)
-            policy["b1"] = np.random.normal(0, 1, self.n_hidden)
-            policy["b2"] = np.random.normal(0, 1, self.n_outputs)
+            policy['L1'] = np.random.normal(0, 1, self.n_inputs * self.n_hidden)
+            policy['L2'] = np.random.normal(0, 1, self.n_hidden * self.n_outputs)
+            policy['b1'] = np.random.normal(0, 1, self.n_hidden)
+            policy['b2'] = np.random.normal(0, 1, self.n_outputs)
 
-            self.population["pol{0}".format(pol_id)] = copy.deepcopy(policy)
+            self.population[f'pol{pol_id}'] = copy.deepcopy(policy)
 
     def weight_mutate(self):
         """
@@ -54,33 +54,33 @@ class EA:
                 for w in range(self.n_inputs*self.n_hidden):
                     rnum1 = random.uniform(0, 1)
                     if rnum1 <= self.mut_chance:
-                        weight = self.population["pol{0}".format(pol_id)]["L1"][w]
+                        weight = self.population[f'pol{pol_id}']['L1'][w]
                         weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population["pol{0}".format(pol_id)]["L1"][w] = weight
+                        self.population[f'pol{pol_id}']['L1'][w] = weight
 
                 # Second Weight Layer
                 for w in range(self.n_hidden*self.n_outputs):
                     rnum2 = random.uniform(0, 1)
                     if rnum2 <= self.mut_chance:
-                        weight = self.population["pol{0}".format(pol_id)]["L2"][w]
+                        weight = self.population[f'pol{pol_id}']['L2'][w]
                         weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population["pol{0}".format(pol_id)]["L2"][w] = weight
+                        self.population[f'pol{pol_id}']['L2'][w] = weight
 
                 # Output bias weights
                 for w in range(self.n_hidden):
                     rnum3 = random.uniform(0, 1)
                     if rnum3 <= self.mut_chance:
-                        weight = self.population["pol{0}".format(pol_id)]["b1"][w]
+                        weight = self.population[f'pol{pol_id}']['b1'][w]
                         weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population["pol{0}".format(pol_id)]["b1"][w] = weight
+                        self.population[f'pol{pol_id}']['b1'][w] = weight
 
                 # Output layer weights
                 for w in range(self.n_outputs):
                     rnum4 = random.uniform(0, 1)
                     if rnum4 <= self.mut_chance:
-                        weight = self.population["pol{0}".format(pol_id)]["b2"][w]
+                        weight = self.population[f'pol{pol_id}']['b2'][w]
                         weight += (np.random.normal(0, self.mut_rate)) * weight
-                        self.population["pol{0}".format(pol_id)]["b2"][w] = weight
+                        self.population[f'pol{pol_id}']['b2'][w] = weight
 
     def binary_tournament_selection(self):
         """
@@ -90,7 +90,7 @@ class EA:
         max_id = np.argmax(self.fitness)
         for pol_id in range(self.pop_size):
             if pol_id == max_id:  # Preserve the champion
-                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_id)])
+                new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 p1 = random.randint(0, self.pop_size-1)
                 p2 = random.randint(0, self.pop_size-1)
@@ -98,15 +98,15 @@ class EA:
                     p2 = random.randint(0, self.pop_size - 1)
 
                 if self.fitness[p1] > self.fitness[p2]:
-                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
+                    new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{p1}'])
                 elif self.fitness[p1] < self.fitness[p2]:
-                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p2)])
+                    new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{p2}'])
                 else:  # If fitnesses are equal, use a random tie breaker
                     rnum = random.uniform(0, 1)
                     if rnum > 0.5:
-                        new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p1)])
+                        new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{p1}'])
                     else:
-                        new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(p2)])
+                        new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{p2}'])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -119,15 +119,15 @@ class EA:
         for pol_id in range(self.pop_size):
             if pol_id < self.n_elites:
                 max_id = np.argmax(self.fitness)
-                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_id)])
+                new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 rnum = random.uniform(0, 1)
                 if rnum < self.eps:  # Greedy Selection
                     max_id = np.argmax(self.fitness)
-                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_id)])
+                    new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
                 else:  # Random Selection
                     parent = random.randint(1, (self.pop_size - 1))
-                    new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(parent)])
+                    new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{parent}'])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -140,10 +140,10 @@ class EA:
         for pol_id in range(self.pop_size):
             if pol_id < self.n_elites:
                 max_id = np.argmax(self.fitness)
-                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(max_id)])
+                new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 parent = random.randint(0, self.pop_size-1)
-                new_population["pol{0}".format(pol_id)] = copy.deepcopy(self.population["pol{0}".format(parent)])
+                new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{parent}'])
 
         self.population = {}
         self.population = copy.deepcopy(new_population)
@@ -155,12 +155,12 @@ class EA:
         ranked_population = copy.deepcopy(self.population)
         for pol_a in range(self.pop_size):
             pol_b = pol_a + 1
-            ranked_population["pol{0}".format(pol_a)] = copy.deepcopy(self.population["pol{0}".format(pol_a)])
+            ranked_population[f'pol{pol_a}'] = copy.deepcopy(self.population[f'pol{pol_a}'])
             while pol_b < (self.pop_size):
                 if pol_a != pol_b:
                     if self.fitness[pol_a] < self.fitness[pol_b]:
                         self.fitness[pol_a], self.fitness[pol_b] = self.fitness[pol_b], self.fitness[pol_a]
-                        ranked_population["pol{0}".format(pol_a)] = copy.deepcopy(self.population["pol{0}".format(pol_b)])
+                        ranked_population[f'pol{pol_a}'] = copy.deepcopy(self.population[f'pol{pol_b}'])
                 pol_b += 1
 
         self.population = {}

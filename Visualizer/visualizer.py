@@ -35,7 +35,7 @@ def import_rover_paths(config_id):
     :return:
     """
     dir_name = 'Output_Data/'
-    file_name = 'Rover_Paths{0}'.format(config_id)
+    file_name = f'Rover_Paths{config_id}'
     rover_path_file = os.path.join(dir_name, file_name)
     infile = open(rover_path_file, 'rb')
     rover_paths = pickle.load(infile)
@@ -52,7 +52,7 @@ def import_poi_information(n_poi, config_id):
     pois = np.zeros((n_poi, 4))
 
     config_input = []
-    with open('./World_Config/POI_Config{0}.csv'.format(config_id)) as csvfile:
+    with open(f'./World_Config/POI_Config{config_id}.csv') as csvfile:
         csv_reader = csv.reader(csvfile, delimiter=',')
 
         for row in csv_reader:

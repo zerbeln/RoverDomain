@@ -47,7 +47,6 @@ class RoverDomain:
     def calc_global(self):
         """
         Calculate the global reward for the current state as the reward given by each POI.
-        :return: Array capturing reward given from each POI at current time step (sum is the global reward)
         """
         global_reward = np.zeros(self.n_pois)
 
@@ -74,7 +73,7 @@ class RoverDomain:
 
         for cf_id in range(p["n_configurations"]):
             csv_input = []
-            with open('./World_Config/POI_Config{0}.csv'.format(cf_id)) as csvfile:
+            with open(f'./World_Config/POI_Config{cf_id}.csv') as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=',')
 
                 for row in csv_reader:
@@ -88,7 +87,7 @@ class RoverDomain:
                 poi_hazard = float(csv_input[poi_id][4])
 
                 if cf_id == 0:
-                    self.pois["P{0}".format(poi_id)] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
+                    self.pois[f'P{poi_id}'] = POI(poi_x, poi_y, poi_val, poi_coupling, poi_id)
 
                 self.poi_configurations[poi_id].append((poi_x, poi_y, poi_val, poi_coupling, poi_hazard))
 
@@ -99,7 +98,7 @@ class RoverDomain:
 
         for cf_id in range(p["n_configurations"]):
             csv_input = []
-            with open('./World_Config/Rover_Config{0}.csv'.format(cf_id)) as csvfile:
+            with open(f'./World_Config/Rover_Config{cf_id}.csv') as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=',')
 
                 for row in csv_reader:
@@ -111,15 +110,13 @@ class RoverDomain:
                 rov_theta = float(csv_input[rover_id][2])
 
                 if cf_id == 0:
-                    self.rovers["R{0}".format(rover_id)] = Rover(rover_id, rov_x, rov_y, rov_theta)
+                    self.rovers[f'R{rover_id}'] = Rover(rover_id, rov_x, rov_y, rov_theta)
 
                 self.rover_configurations[rover_id].append((rov_x, rov_y, rov_theta))
 
     def step(self, rover_actions):
         """
         Environment takes in rover actions and returns next state and the global reward
-        :param rover_actions: array containing actions for each rover taken from rover neural networks
-        :return global_reward: numpy array containing the reward given by each POI for the given state
         """
 
         # Rovers take action from neural network

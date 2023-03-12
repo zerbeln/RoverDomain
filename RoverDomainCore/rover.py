@@ -33,8 +33,6 @@ class Rover:
     def scan_environment(self, rovers, pois):
         """
         Constructs the state information that gets passed to the rover's neuro-controller
-        :param rovers: Dictionary containing rover class instances
-        :param pois: Dictionary containing POI class instances
         """
         n_brackets = int(360.0 / self.sensor_res)
         poi_state = self.poi_scan(pois, n_brackets)
@@ -47,9 +45,6 @@ class Rover:
     def poi_scan(self, pois, n_brackets):
         """
         Rover observes POIs in the environment using sensors
-        :param pois: Dictionary containing POI class instances
-        :param n_brackets: integer value for the number of brackets/sectors rover sensors scan (resolution)
-        :return poi_state: numpy array containing state information for POI observations
         """
         poi_state = np.zeros(n_brackets)
         temp_poi_dist_list = [[] for _ in range(n_brackets)]
@@ -83,9 +78,6 @@ class Rover:
     def rover_scan(self, rovers, n_brackets):
         """
         Rover observes other rovers in the environment using sensors
-        :param rovers: Dictionary containing rover class instances
-        :param n_brackets: integer value for the number of brackets/sectors rover sensors scan (resolution)
-        :return rover_state: numpy array containing state information for Rover observations
         """
         rover_state = np.zeros(n_brackets)
         temp_rover_dist_list = [[] for _ in range(n_brackets)]
