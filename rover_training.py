@@ -27,8 +27,7 @@ def sample_best_team(rd, pops, networks):
             # Get rover actions from neural network
             rover_actions = []
             for rv in rd.rovers:
-                rover_id = rd.rovers[rv].rover_id
-                action = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                action = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                 rover_actions.append(action)
 
             step_rewards = rd.step(rover_actions)
@@ -90,8 +89,7 @@ def rover_global():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            action = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            action = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)
@@ -177,8 +175,7 @@ def rover_difference():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            action = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            action = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)
@@ -265,8 +262,7 @@ def rover_dpp():
                         # Get rover actions from neural network
                         rover_actions = []
                         for rv in rd.rovers:
-                            rover_id = rd.rovers[rv].rover_id
-                            action = networks[f'NN{rover_id}'].run_rover_nn(rd.rovers[rv].observations)
+                            action = networks[f'NN{rd.rovers[rv].rover_id}'].run_rover_nn(rd.rovers[rv].observations)
                             rover_actions.append(action)
 
                         step_rewards = rd.step(rover_actions)

@@ -11,23 +11,23 @@ def calc_difference(pois, global_reward, rov_poi_dist):
     difference_rewards = np.zeros(p["n_rovers"])
     for agent_id in range(p["n_rovers"]):
         counterfactual_global_reward = 0.0
-        for pk in pois:  # For each POI
+        for poi in pois:  # For each POI
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
                 observer_count = 0
-                rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
+                rover_distances = copy.deepcopy(rov_poi_dist[pois[poi].poi_id][step])
                 rover_distances[agent_id] = 1000.00  # Replace Rover action with counterfactual action
                 sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
                 # Check if required observers within range of POI
-                for i in range(int(pois[pk].coupling)):
+                for i in range(int(pois[poi].coupling)):
                     if sorted_distances[i] < p["observation_radius"]:
                         observer_count += 1
 
                 # Calculate reward for given POI at current time step
-                if observer_count >= int(pois[pk].coupling):
-                    summed_observer_distances = sum(sorted_distances[0:int(pois[pk].coupling)])
-                    reward = pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                if observer_count >= int(pois[poi].coupling):
+                    summed_observer_distances = sum(sorted_distances[0:int(pois[poi].coupling)])
+                    reward = pois[poi].value/(summed_observer_distances/pois[poi].coupling)
                     if reward > poi_reward:
                         poi_reward = reward
 
@@ -52,24 +52,24 @@ def calc_dpp(pois, global_reward, rov_poi_dist):
     for agent_id in range(p["n_rovers"]):
         counterfactual_global_reward = 0.0
         n_counters = p["n_rovers"]-1
-        for pk in pois:
+        for poi in pois:
             poi_reward = 0.0  # Track best POI reward over all time steps for given POI
             for step in range(p["steps"]):
                 observer_count = 0
-                rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
+                rover_distances = copy.deepcopy(rov_poi_dist[pois[poi].poi_id][step])
                 counterfactual_rovers = np.ones(int(n_counters)) * rover_distances[agent_id]
                 rover_distances = np.append(rover_distances, counterfactual_rovers)
                 sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
                 # Check if required observers within range of POI
-                for i in range(int(pois[pk].coupling)):
+                for i in range(int(pois[poi].coupling)):
                     if sorted_distances[i] < p["observation_radius"]:
                         observer_count += 1
 
                 # Calculate reward for given POI at current time step
-                if observer_count >= pois[pk].coupling:
-                    summed_observer_distances = sum(sorted_distances[0:int(pois[pk].coupling)])
-                    reward = pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                if observer_count >= pois[poi].coupling:
+                    summed_observer_distances = sum(sorted_distances[0:int(pois[poi].coupling)])
+                    reward = pois[poi].value/(summed_observer_distances/pois[poi].coupling)
                     if reward > poi_reward:
                         poi_reward = reward
 
@@ -84,24 +84,24 @@ def calc_dpp(pois, global_reward, rov_poi_dist):
             n_counters = 1
             while n_counters < p["n_rovers"]:
                 counterfactual_global_reward = 0.0
-                for pk in pois:
+                for poi in pois:
                     observer_count = 0
                     poi_reward = 0.0  # Track best POI reward over all time steps for given POI
                     for step in range(p["steps"]):
-                        rover_distances = copy.deepcopy(rov_poi_dist[pois[pk].poi_id][step])
+                        rover_distances = copy.deepcopy(rov_poi_dist[pois[poi].poi_id][step])
                         counterfactual_rovers = np.ones(int(n_counters)) * rover_distances[agent_id]
                         rover_distances = np.append(rover_distances, counterfactual_rovers)
                         sorted_distances = np.sort(rover_distances)  # Sort from least to greatest
 
                         # Check if required observers within range of POI
-                        for i in range(int(pois[pk].coupling)):
+                        for i in range(int(pois[poi].coupling)):
                             if sorted_distances[i] < p["observation_radius"]:
                                 observer_count += 1
 
                         # Calculate reward for given POI at current time step
-                        if observer_count >= pois[pk].coupling:
-                            summed_observer_distances = sum(sorted_distances[0:int(pois[pk].coupling)])
-                            reward = pois[pk].value/(summed_observer_distances/pois[pk].coupling)
+                        if observer_count >= pois[poi].coupling:
+                            summed_observer_distances = sum(sorted_distances[0:int(pois[poi].coupling)])
+                            reward = pois[poi].value/(summed_observer_distances/pois[poi].coupling)
                             if reward > poi_reward:
                                 poi_reward = reward
 

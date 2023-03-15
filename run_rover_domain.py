@@ -21,6 +21,3 @@ if __name__ == '__main__':
         rover_dpp()
     else:
         print("ALGORITHM TYPE ERROR")
-
-    # run_visualizer(0)
-    run_rover_visualizer(0)
