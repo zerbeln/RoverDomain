@@ -5,37 +5,36 @@ class NeuralNetwork:
     def __init__(self, n_inp=8, n_hid=10, n_out=2):
         self.n_inputs = n_inp  # Number of nodes in input layer
         self.n_outputs = n_out  # Number of nodes in output layer
-        self.n_hnodes = n_hid  # Number of nodes in hidden layer
+        self.n_hidden = n_hid  # Number of nodes in hidden layer
         self.weights = {}
-        self.input_layer = np.reshape(np.mat(np.zeros(self.n_inputs, dtype=np.longdouble)), [self.n_inputs, 1])
-        self.hidden_layer = np.reshape(np.mat(np.zeros(self.n_hnodes, dtype=np.longdouble)), [self.n_hnodes, 1])
-        self.output_layer = np.reshape(np.mat(np.zeros(self.n_outputs, dtype=np.longdouble)), [self.n_outputs, 1])
+        self.input_layer = np.zeros(self.n_inputs)
+        self.hidden_layer = np.zeros(self.n_hidden)
+        self.output_layer = np.zeros(self.n_outputs)
 
     # Rover Control NN ------------------------------------------------------------------------------------------------
     def get_weights(self, nn_weights):
         """
         Apply chosen network weights to the agent's neuro-controller
         """
-        self.weights['Layer1'] = np.reshape(np.mat(nn_weights['L1']), [self.n_hnodes, self.n_inputs])
-        self.weights['Layer2'] = np.reshape(np.mat(nn_weights['L2']), [self.n_outputs, self.n_hnodes])
-        self.weights['input_bias'] = np.reshape(np.mat(nn_weights['b1']), [self.n_hnodes, 1])
-        self.weights['hidden_bias'] = np.reshape(np.mat(nn_weights['b2']), [self.n_outputs, 1])
+        self.weights['l1'] = nn_weights['L1'][0:self.n_inputs, :]
+        self.weights['l1_bias'] = nn_weights['L1'][self.n_inputs, :]  # Biasing weights
+        self.weights['l2'] = nn_weights['L2'][0:self.n_hidden, :]
+        self.weights['l2_bias'] = nn_weights['L2'][self.n_hidden, :]  # Biasing weights
 
     def get_nn_inputs(self, sensor_data):
         """
         Take in state information collected by rover and assign to input layer of network
         """
-        for i in range(self.n_inputs):
-            self.input_layer[i, 0] = sensor_data[i]
+        self.input_layer = sensor_data.copy()
 
     def get_nn_outputs(self):
         """
         Run rover NN to generate actions
         """
-        self.hidden_layer = np.dot(self.weights['Layer1'], self.input_layer) + self.weights['input_bias']
+        self.hidden_layer = np.dot(self.input_layer, self.weights['l1']) + self.weights['l1_bias']
         self.hidden_layer = self.sigmoid(self.hidden_layer)
 
-        self.output_layer = np.dot(self.weights['Layer2'], self.hidden_layer) + self.weights['hidden_bias']
+        self.output_layer = np.dot(self.hidden_layer, self.weights['l2']) + self.weights['l2_bias']
         self.output_layer = self.sigmoid(self.output_layer)
 
     def run_rover_nn(self, sensor_data):
@@ -45,9 +44,7 @@ class NeuralNetwork:
         self.get_nn_inputs(sensor_data)
         self.get_nn_outputs()
 
-        rover_actions = np.zeros(self.n_outputs)
-        for i in range(self.n_outputs):
-            rover_actions[i] = self.output_layer[i, 0]
+        rover_actions = self.output_layer.copy()
 
         return rover_actions
 
@@ -56,7 +53,6 @@ class NeuralNetwork:
         """
         tanh neural network activation function
         """
-
         tanh = (2 / (1 + np.exp(-2 * inp))) - 1
 
         return tanh
@@ -65,8 +61,6 @@ class NeuralNetwork:
         """
         sigmoid neural network activation function
         """
-
         sig = 1 / (1 + np.exp(-inp))
 
         return sig
-

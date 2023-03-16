@@ -28,17 +28,15 @@ class EA:
 
     def create_new_population(self):  # Re-initializes CCEA populations for new run
         """
-        Create new populations (for beginning of stat run)
+        Create new population of network weights (for beginning of stat run)
         """
         self.population = {}
         self.fitness = np.zeros(self.pop_size)
 
         for pol_id in range(self.pop_size):
             policy = {}
-            policy['L1'] = np.random.normal(0, 1, self.n_inputs * self.n_hidden)
-            policy['L2'] = np.random.normal(0, 1, self.n_hidden * self.n_outputs)
-            policy['b1'] = np.random.normal(0, 1, self.n_hidden)
-            policy['b2'] = np.random.normal(0, 1, self.n_outputs)
+            policy['L1'] = np.random.normal(0, 1, (self.n_inputs+1, self.n_hidden))  # Layer 1 weights
+            policy['L2'] = np.random.normal(0, 1, (self.n_hidden+1, self.n_outputs))  # Layer 2 weights
 
             self.population[f'pol{pol_id}'] = copy.deepcopy(policy)
 
@@ -46,41 +44,26 @@ class EA:
         """
         Mutate offspring populations (each weight has a probability of mutation)
         """
-        max_id = np.argmax(self.fitness)  # Preserve the champion
-
-        for pol_id in range(self.pop_size):
-            if pol_id != max_id:
-                # First Weight Layer
-                for w in range(self.n_inputs*self.n_hidden):
+        pol_id = self.n_elites  # Preserve the elites (no mutation)
+        while pol_id < self.pop_size:
+            # First Weight Layer
+            for i in range(self.n_inputs+1):
+                for j in range(self.n_hidden):
                     rnum1 = random.uniform(0, 1)
                     if rnum1 <= self.mut_chance:
-                        weight = self.population[f'pol{pol_id}']['L1'][w]
+                        weight = self.population[f'pol{pol_id}']['L1'][i, j]
                         weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population[f'pol{pol_id}']['L1'][w] = weight
+                        self.population[f'pol{pol_id}']['L1'][i, j] = weight
 
-                # Second Weight Layer
-                for w in range(self.n_hidden*self.n_outputs):
+            # Second Weight Layer
+            for i in range(self.n_hidden+1):
+                for j in range(self.n_outputs):
                     rnum2 = random.uniform(0, 1)
                     if rnum2 <= self.mut_chance:
-                        weight = self.population[f'pol{pol_id}']['L2'][w]
+                        weight = self.population[f'pol{pol_id}']['L2'][i, j]
                         weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population[f'pol{pol_id}']['L2'][w] = weight
-
-                # Output bias weights
-                for w in range(self.n_hidden):
-                    rnum3 = random.uniform(0, 1)
-                    if rnum3 <= self.mut_chance:
-                        weight = self.population[f'pol{pol_id}']['b1'][w]
-                        weight += np.random.normal(0, self.mut_rate) * weight
-                        self.population[f'pol{pol_id}']['b1'][w] = weight
-
-                # Output layer weights
-                for w in range(self.n_outputs):
-                    rnum4 = random.uniform(0, 1)
-                    if rnum4 <= self.mut_chance:
-                        weight = self.population[f'pol{pol_id}']['b2'][w]
-                        weight += (np.random.normal(0, self.mut_rate)) * weight
-                        self.population[f'pol{pol_id}']['b2'][w] = weight
+                        self.population[f'pol{pol_id}']['L2'][i, j] = weight
+            pol_id += 1
 
     def binary_tournament_selection(self):
         """
@@ -116,14 +99,13 @@ class EA:
         Select parents using e-greedy selection
         """
         new_population = {}
+        max_id = np.argmax(self.fitness)
         for pol_id in range(self.pop_size):
             if pol_id < self.n_elites:  # Preserve the champions (elite selection)
-                max_id = np.argmax(self.fitness)
                 new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 rnum = random.uniform(0, 1)
                 if rnum < self.eps:  # Greedy Selection
-                    max_id = np.argmax(self.fitness)
                     new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
                 else:  # Random Selection
                     parent = random.randint(1, (self.pop_size - 1))
@@ -137,9 +119,9 @@ class EA:
         Choose next generation of policies using elite-random selection
         """
         new_population = {}
+        max_id = np.argmax(self.fitness)
         for pol_id in range(self.pop_size):
             if pol_id < self.n_elites:  # Preserve the champions (elite selection)
-                max_id = np.argmax(self.fitness)
                 new_population[f'pol{pol_id}'] = copy.deepcopy(self.population[f'pol{max_id}'])
             else:
                 parent = random.randint(0, self.pop_size-1)
